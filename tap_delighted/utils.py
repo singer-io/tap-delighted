@@ -9,7 +9,7 @@ def get_datetime_from_timestamp(timestamp: Optional[int]) -> Optional[str]:
     If the timestamp is None, return None.
 
     Args:
-        timestamp (Optional[int]): The timestamp in milliseconds.
+        timestamp (Optional[int]): The timestamp in seconds.
 
     Returns:
         Optional[str]: The ISO 8601 formatted date-time string.
@@ -17,19 +17,19 @@ def get_datetime_from_timestamp(timestamp: Optional[int]) -> Optional[str]:
 
     if timestamp is None:
         return None
-    datetime_obj = datetime.fromtimestamp(timestamp).isoformat()
-    return datetime.strftime(datetime_obj, DATETIME_FORMAT)
+    datetime_obj = datetime.fromtimestamp(timestamp)
+    return datetime_obj.strftime(DATETIME_FORMAT)
 
 
 def get_timestamp_from_datetime(date_str: Optional[str]) -> Optional[int]:
-    """Convert an ISO 8601 formatted date-time string to a timestamp in.
+    """Convert an ISO 8601 formatted date-time string to a timestamp in seconds.
     If the date_str is None, return None.
 
     Args:
         date_str (Optional[str]): The ISO 8601 formatted date-time string.
 
     Returns:
-        Optional[int]: The timestamp.
+        Optional[int]: The timestamp in seconds.
     """
 
     if date_str is None:
