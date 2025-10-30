@@ -6,4 +6,4 @@ class People(IncrementalStream):
     key_properties = "id"
     replication_method = "INCREMENTAL"
     replication_keys = ["created_at"]
-    path = "/v1/people.json"
+    path = "v1/people.json"

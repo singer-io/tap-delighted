@@ -2,6 +2,7 @@ import json
 import sys
 
 import singer
+
 from tap_delighted.client import Client
 from tap_delighted.discover import discover
 from tap_delighted.sync import sync

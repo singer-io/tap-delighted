@@ -5,8 +5,10 @@ import requests
 from requests import session
 from requests.exceptions import ChunkedEncodingError, ConnectionError, Timeout
 from singer import get_logger, metrics
+
 from tap_delighted.exceptions import (ERROR_CODE_EXCEPTION_MAPPING,
                                       DelightedBackoffError, DelightedError)
+from tap_delighted.utils import get_timestamp_from_datetime
 
 LOGGER = get_logger()
 REQUEST_TIMEOUT = 300
@@ -62,11 +64,23 @@ class Client:
         self._session.close()
 
     def check_api_credentials(self) -> None:
-        pass
+        LOGGER.info("Checking API credentials")
+
+        auth = (self.config.get("api_key"), "")
+        self._session.auth = auth
+        endpoint = f"{self.base_url}/v1/people.json"
+
+        start_date = self.config.get("start_date")
+        ts = get_timestamp_from_datetime(date_str=start_date)
+
+        params = {"per_page": 1, "since": ts} if ts else {"per_page": 1}
+        headers = {"Content-Type": "application/json"}
+        self.make_request(method="GET", endpoint=endpoint, params=params, headers=headers)
+
+        LOGGER.info("API credentials are valid")
 
     def authenticate(self, headers: Dict, params: Dict) -> Tuple[Dict, Dict]:
         """Authenticates the request with the token"""
-        headers[""] = self.config[""]
         return headers, params
 
     def make_request(

@@ -6,4 +6,4 @@ class SmsAutopilot(IncrementalStream):
     key_properties = []
     replication_method = "INCREMENTAL"
     replication_keys = ["updated_at"]
-    path = "/v1/autopilot/sms/memberships.json"
+    path = "v1/autopilot/sms/memberships.json"
