@@ -6,4 +6,4 @@ class EmailAutopilot(IncrementalStream):
     key_properties = []
     replication_method = "INCREMENTAL"
     replication_keys = ["updated_at"]
-    path = "/v1/autopilot/email/memberships.json"
+    path = "v1/autopilot/email/memberships.json"

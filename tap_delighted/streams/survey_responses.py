@@ -6,4 +6,4 @@ class SurveyResponses(IncrementalStream):
     key_properties = "id"
     replication_method = "INCREMENTAL"
     replication_keys = ["updated_at"]
-    path = "/v1/survey_responses.json"
+    path = "v1/survey_responses.json"

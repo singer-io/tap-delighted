@@ -6,4 +6,4 @@ class Bounces(IncrementalStream):
     key_properties = "person_id"
     replication_method = "INCREMENTAL"
     replication_keys = ["bounced_at"]
-    path = "/v1/bounces.json"
+    path = "v1/bounces.json"
