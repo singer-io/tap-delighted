@@ -1,7 +1,8 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+BOOKMARK_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 def get_datetime_from_timestamp(timestamp: Optional[int]) -> Optional[str]:
@@ -17,7 +18,7 @@ def get_datetime_from_timestamp(timestamp: Optional[int]) -> Optional[str]:
 
     if timestamp is None:
         return None
-    datetime_obj = datetime.fromtimestamp(timestamp)
+    datetime_obj = datetime.fromtimestamp(timestamp, tz=timezone.utc)
     return datetime_obj.strftime(DATETIME_FORMAT)
 
 
@@ -35,5 +36,9 @@ def get_timestamp_from_datetime(date_str: Optional[str]) -> Optional[int]:
     if date_str is None:
         return None
 
-    dt = datetime.strptime(date_str, DATETIME_FORMAT)
+    try:
+        dt = datetime.strptime(date_str, DATETIME_FORMAT).replace(tzinfo=timezone.utc)
+    except Exception:
+        dt = datetime.strptime(date_str, BOOKMARK_FORMAT).replace(tzinfo=timezone.utc)
+
     return int(dt.timestamp())

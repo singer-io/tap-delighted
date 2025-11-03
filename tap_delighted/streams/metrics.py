@@ -6,3 +6,4 @@ class Metrics(FullTableStream):
     key_properties = []
     replication_method = "FULL_TABLE"
     path = "v1/metrics.json"
+    http_method = "GET"

@@ -7,7 +7,8 @@ from requests.exceptions import ChunkedEncodingError, ConnectionError, Timeout
 from singer import get_logger, metrics
 
 from tap_delighted.exceptions import (ERROR_CODE_EXCEPTION_MAPPING,
-                                      DelightedBackoffError, DelightedError)
+                                      DelightedBackoffError, DelightedError,
+                                      DelightedRateLimitError)
 from tap_delighted.utils import get_timestamp_from_datetime
 
 LOGGER = get_logger()
@@ -66,8 +67,6 @@ class Client:
     def check_api_credentials(self) -> None:
         LOGGER.info("Checking API credentials")
 
-        auth = (self.config.get("api_key"), "")
-        self._session.auth = auth
         endpoint = f"{self.base_url}/v1/people.json"
 
         start_date = self.config.get("start_date")
@@ -81,6 +80,9 @@ class Client:
 
     def authenticate(self, headers: Dict, params: Dict) -> Tuple[Dict, Dict]:
         """Authenticates the request with the token"""
+        auth = (self.config.get("api_key"), "")
+        self._session.auth = auth
+
         return headers, params
 
     def make_request(
@@ -90,7 +92,8 @@ class Client:
         params: Optional[Dict[str, Any]] = None,
         headers: Optional[Dict[str, Any]] = None,
         body: Optional[Dict[str, Any]] = None,
-        path: Optional[str] = None
+        path: Optional[str] = None,
+        **kwargs
     ) -> Any:
         """
         Sends an HTTP request to the specified API endpoint.
@@ -105,7 +108,8 @@ class Client:
             headers=headers,
             params=params,
             data=body,
-            timeout=self.request_timeout
+            timeout=self.request_timeout,
+            **kwargs
         )
 
     @backoff.on_exception(
@@ -115,7 +119,8 @@ class Client:
             ConnectionError,
             ChunkedEncodingError,
             Timeout,
-            DelightedBackoffError
+            DelightedBackoffError,
+            DelightedRateLimitError
         ),
         max_tries=5,
         factor=2,
@@ -125,6 +130,8 @@ class Client:
     ) -> Optional[Mapping[Any, Any]]:
         """Performs HTTP Operations."""
         method = method.upper()
+        full_response = kwargs.pop("full_response", False)
+
         with metrics.http_request_timer(endpoint):
             if method in ("GET", "POST"):
                 if method == "GET":
@@ -133,5 +140,8 @@ class Client:
                 raise_for_error(response)
             else:
                 raise ValueError(f"Unsupported method: {method}")
+
+        if full_response:
+            return response
 
         return response.json()

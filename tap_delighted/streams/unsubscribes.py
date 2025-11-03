@@ -7,3 +7,7 @@ class Unsubscribes(IncrementalStream):
     replication_method = "INCREMENTAL"
     replication_keys = ["unsubscribed_at"]
     path = "v1/unsubscribes.json"
+    http_method = "GET"
+
+    is_page_number_pagination = True
+    filter_param = "since"
