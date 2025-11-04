@@ -1,1 +1,224 @@
-{}
+{
+    "type": "object",
+    "properties": {
+        "id": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "person": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "survey_type": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "score": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "comment": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "permalink": {
+            "type": [
+                "null",
+                "string"
+            ]
+        },
+        "created_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "updated_at": {
+            "type": [
+                "null",
+                "string"
+            ],
+            "format": "date-time"
+        },
+        "person_properties": {
+            "type": [
+                "null",
+                "object"
+            ]
+        },
+        "notes": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "type": [
+                    "null",
+                    "object"
+                ],
+                "properties": {
+                    "id": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "text": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "user_email": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "created_at": {
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "format": "date-time"
+                    }
+                }
+            }
+        },
+        "tags": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "type": [
+                    "null",
+                    "string"
+                ]
+            }
+        },
+        "additional_answers": {
+            "type": [
+                "null",
+                "array"
+            ],
+            "items": {
+                "type": [
+                    "null",
+                    "object"
+                ],
+                "properties": {
+                    "id": {
+                        "type": [
+                            "null",
+                            "string"
+                        ]
+                    },
+                    "value": {
+                        "type": [
+                            "null",
+                            "object"
+                        ],
+                        "properties": {
+                            "free_response": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "scale": {
+                                "type": [
+                                    "null",
+                                    "integer"
+                                ]
+                            },
+                            "select_one": {
+                                "type": [
+                                    "null",
+                                    "object"
+                                ],
+                                "properties": {
+                                    "id": {
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ]
+                                    },
+                                    "text": {
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ]
+                                    }
+                                }
+                            },
+                            "select_many": {
+                                "type": [
+                                    "null",
+                                    "array"
+                                ],
+                                "items": {
+                                    "type": [
+                                        "null",
+                                        "object"
+                                    ],
+                                    "properties": {
+                                        "id": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        },
+                                        "text": {
+                                            "type": [
+                                                "null",
+                                                "string"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "question": {
+                        "type": [
+                            "null",
+                            "object"
+                        ],
+                        "properties": {
+                            "id": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "type": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            },
+                            "text": {
+                                "type": [
+                                    "null",
+                                    "string"
+                                ]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

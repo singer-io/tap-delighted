@@ -1,1 +1,53 @@
-{}
+{
+    "type": "object",
+    "properties": {
+        "nps": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "promoter_count": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "promoter_percent": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "passive_count": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "passive_percent": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "detractor_count": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "detractor_percent": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        },
+        "response_count": {
+            "type": [
+                "null",
+                "integer"
+            ]
+        }
+    }
+}
