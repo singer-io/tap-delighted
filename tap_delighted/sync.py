@@ -1,6 +1,7 @@
 from typing import Dict
 
 import singer
+
 from tap_delighted.client import Client
 from tap_delighted.streams import STREAMS
 
@@ -57,6 +58,7 @@ def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
             write_schema(stream, client, streams_to_sync, catalog)
             LOGGER.info("START Syncing: {}".format(stream_name))
             update_currently_syncing(state, stream_name)
+
             total_records = stream.sync(state=state, transformer=transformer)
 
             update_currently_syncing(state, None)
@@ -65,4 +67,3 @@ def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
                     stream_name, total_records
                 )
             )
-
