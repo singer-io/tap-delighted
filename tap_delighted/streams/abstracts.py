@@ -295,6 +295,16 @@ class FullTableStream(BaseStream):
         if isinstance(response, dict):
             raw_records = [response]
 
+        elif isinstance(response, list):
+            raw_records = response
+
+        elif response is None:
+            raw_records = []
+
+        else:
+            LOGGER.warning(f"Unexpected response type: {type(response)} in {self.__class__.__name__}.get_records")
+            raw_records = []
+
         yield from raw_records
 
     def sync(

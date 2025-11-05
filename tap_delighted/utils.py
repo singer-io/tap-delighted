@@ -22,7 +22,7 @@ def get_datetime_from_timestamp(timestamp: Optional[int]) -> Optional[str]:
         Optional[str]: The ISO 8601 formatted date-time string.
     """
 
-    if not timestamp:
+    if timestamp is None:
         return None
 
     datetime_obj = datetime.fromtimestamp(timestamp, tz=timezone.utc)
