@@ -1,17 +1,9 @@
-import copy
 import os
-import unittest
-from datetime import datetime as dt
-from datetime import timedelta
 
-import dateutil.parser
-import pytz
-from tap_tester import connections, menagerie, runner
 from tap_tester.base_suite_tests.base_case import BaseCase
-from tap_tester.logger import LOGGER
 
 
-class delightedBaseTest(BaseCase):
+class DelightedBaseTest(BaseCase):
     """Setup expectations for test sub classes.
 
     Metadata describing streams. A bunch of shared methods that are used
@@ -46,10 +38,10 @@ class delightedBaseTest(BaseCase):
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: {"updated_at"},
                 cls.OBEYS_START_DATE: False,
-                cls.API_LIMIT: 20
+                cls.API_LIMIT: 2
             },
             "metrics": {
-                cls.PRIMARY_KEYS: {},
+                cls.PRIMARY_KEYS: set(),
                 cls.REPLICATION_METHOD: cls.FULL_TABLE,
                 cls.REPLICATION_KEYS: set(),
                 cls.OBEYS_START_DATE: False,
@@ -60,24 +52,24 @@ class delightedBaseTest(BaseCase):
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: {"unsubscribed_at"},
                 cls.OBEYS_START_DATE: False,
-                cls.API_LIMIT: 20
+                cls.API_LIMIT: 2
             },
             "bounces": {
                 cls.PRIMARY_KEYS: {"person_id"},
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: {"bounced_at"},
                 cls.OBEYS_START_DATE: False,
-                cls.API_LIMIT: 20
+                cls.API_LIMIT: 3
             },
             "email_autopilot": {
-                cls.PRIMARY_KEYS: {},
+                cls.PRIMARY_KEYS: {"person_id", "next_survey_request_id"},
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: {"updated_at"},
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 20
             },
             "sms_autopilot": {
-                cls.PRIMARY_KEYS: {},
+                cls.PRIMARY_KEYS: {"person_id", "next_survey_request_id"},
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: {"updated_at"},
                 cls.OBEYS_START_DATE: False,
