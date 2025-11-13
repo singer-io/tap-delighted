@@ -4,9 +4,9 @@ from unittest.mock import patch
 import requests
 from parameterized import parameterized
 from requests.exceptions import ChunkedEncodingError, ConnectionError, Timeout
+
 from tap_delighted.client import Client
 from tap_delighted.exceptions import *
-
 
 default_config = {
     "base_url": "https://api.example.com",
@@ -56,7 +56,7 @@ class TestClient(unittest.TestCase):
         """Set up the client with default configuration."""
         self.client = Client(default_config)
 
-    @parameterized.expand([    
+    @parameterized.expand([
         ["empty value", "", DEFAULT_REQUEST_TIMEOUT],
         ["string value", "12", 12.0],
         ["integer value", 10, 10.0],
@@ -73,14 +73,14 @@ class TestClient(unittest.TestCase):
     @patch("tap_delighted.client.Client._Client__make_request")
     def test_client_get(self, mock_make_request):
         mock_make_request.return_value = {"data": "ok"}
-        result = self.client.get("https://api.example.com/resource")
+        result = self.client.make_request("GET", "https://api.example.com/resource")
         assert result == {"data": "ok"}
         mock_make_request.assert_called_once()
 
     @patch("tap_delighted.client.Client._Client__make_request")
     def test_client_post(self, mock_make_request):
         mock_make_request.return_value = {"created": True}
-        result = self.client.post("https://api.example.com/resource", body={"key": "value"})
+        result = self.client.make_request("POST", "https://api.example.com/resource", body={"key": "value"})
         assert result == {"created": True}
         mock_make_request.assert_called_once()
 
@@ -133,3 +133,21 @@ class TestClient(unittest.TestCase):
                 self.client._Client__make_request("GET", "https://api.example.com/resource")
 
             self.assertEqual(mock_request.call_count, 5)
+
+    @patch("tap_delighted.client.Client.make_request")
+    def test_check_api_credentials(self, mock_make_request):
+        """ Test the API credentials check workflow """
+
+        self.client.check_api_credentials()
+        self.assertEqual(mock_make_request.call_count, 1)
+
+    def test_make_request_full_response(self):
+        """ Test the full response object return workflow """
+        with patch.object(self.client._session, "request", return_value=MockResponse(200, text={"data": "ok"}, raise_error=False)) as mock_request:
+            response = self.client.make_request("GET", "https://api.example.com/resource", full_response=True)
+
+            expected_response = {"data": "ok"}
+            actual_response = response.json()
+            self.assertEqual(actual_response, expected_response)
+
+            self.assertEqual(mock_request.call_count, 1)
