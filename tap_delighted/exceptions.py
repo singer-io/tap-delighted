@@ -37,7 +37,7 @@ class DelightedConflictError(DelightedError):
     pass
 
 
-class DelightedUnprocessableEntityError(DelightedBackoffError):
+class DelightedUnprocessableEntityError(DelightedError):
     """class representing 422 status code."""
     pass
 
