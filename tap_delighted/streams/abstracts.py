@@ -5,6 +5,12 @@ from typing import Any, Dict, Iterator, List, Tuple
 from singer import (Transformer, get_bookmark, get_logger, metadata, metrics,
                     write_bookmark, write_record, write_schema)
 
+from tap_delighted.utils import (DelightedPaginator,
+                                 get_datetime_fields_from_schema,
+                                 get_datetime_from_timestamp,
+                                 get_timestamp_from_datetime,
+                                 normalize_autopilot_record)
+
 LOGGER = get_logger()
 
 
@@ -91,7 +97,7 @@ class BaseStream(ABC):
 
     def get_records(self) -> Iterator:
         """Interacts with api client interaction and pagination."""
-        self.params[""] = self.page_size
+        self.params["per_page"] = self.page_size
         next_page = 1
         while next_page:
             response = self.client.make_request(
@@ -170,6 +176,48 @@ class IncrementalStream(BaseStream):
             state, stream, key or self.replication_keys[0], value
         )
 
+    def update_params(self, updated_since) -> None:
+        api_filter_param = self.filter_param
+        LOGGER.info(f"Updating params with filter param: {api_filter_param} and value: {updated_since}")
+        self.params[api_filter_param] = updated_since
+        self.params["per_page"] = self.page_size
+
+    def get_records(self, paginator_obj: DelightedPaginator):
+        """Interacts with api client interaction and pagination."""
+        if self.is_page_number_pagination:
+            yield from paginator_obj._page_number_pagination()
+        else:
+            yield from paginator_obj._cursor_pagination()
+
+    def modify_object(self, record, parent_record=None, datetime_fields=set()):
+        """ Modify the record's datetime fields before writing to the stream
+
+        Args:
+            record (Dict): The record to modify
+            parent_record (Dict, optional): The parent record. Defaults to None.
+            datetime_fields (Set[str], optional): The set of datetime fields. Defaults to set().
+        """
+        # Iterate on the record and convert datetime fields to standard format
+        for field, value in record.items():
+            if field in datetime_fields and value is not None:
+                # Convert to standard datetime format
+                try:
+                    standardized_datetime = get_datetime_from_timestamp(value)
+                    record[field] = standardized_datetime
+                except Exception as e:
+                    LOGGER.error("Error converting field {} with value {}: {}".format(field, value, str(e)))
+                    record[field] = value  # Keep original value if conversion fails
+
+            elif isinstance(value, dict):
+                # Nested object, process recursively
+                self.modify_object(value, datetime_fields=datetime_fields)
+
+            elif isinstance(value, list):
+                # List of items, process each item
+                for item in value:
+                    if isinstance(item, dict):
+                        self.modify_object(item, datetime_fields=datetime_fields)
+
     def sync(
         self,
         state: Dict,
@@ -179,30 +227,52 @@ class IncrementalStream(BaseStream):
         """Implementation for `type: Incremental` stream."""
         bookmark_date = self.get_bookmark(state, self.tap_stream_id)
         current_max_bookmark_date = bookmark_date
-        self.update_params(updated_since=bookmark_date)
+        current_max_bookmark_ts = get_timestamp_from_datetime(date_str=bookmark_date)
+        self.update_params(updated_since=current_max_bookmark_ts)
         self.update_data_payload(parent_obj=parent_obj)
         self.url_endpoint = self.get_url_endpoint(parent_obj)
 
+        # Get all the datetime fields from the schema
+        datetime_fields = get_datetime_fields_from_schema(self.schema)
+
+        # Initialise the paginator class since all
+        # the streams are paginated
+        paginator_obj = DelightedPaginator(
+            client=self.client,
+            params=self.params,
+            headers=self.headers,
+            http_method=self.http_method,
+            path=self.path,
+            url_endpoint=self.url_endpoint
+        )
+
         with metrics.record_counter(self.tap_stream_id) as counter:
-            for record in self.get_records():
-                record = self.modify_object(record, parent_obj)
+            for record in self.get_records(paginator_obj=paginator_obj):
+                self.modify_object(record, parent_obj, datetime_fields=datetime_fields)
+
+                if self.tap_stream_id.endswith("autopilot"):
+                    # If the stream is email or sms autopilot, move the key_properties to root level
+                    normalize_autopilot_record(record, self.key_properties)
+
                 transformed_record = transformer.transform(
                     record, self.schema, self.metadata
                 )
-
                 record_bookmark = transformed_record[self.replication_keys[0]]
-                if record_bookmark >= bookmark_date:
+                record_bookmark_ts = get_timestamp_from_datetime(date_str=record_bookmark)
+
+                if record_bookmark_ts >= current_max_bookmark_ts:
                     if self.is_selected():
                         write_record(self.tap_stream_id, transformed_record)
                         counter.increment()
 
-                    current_max_bookmark_date = max(
-                        current_max_bookmark_date, record_bookmark
+                    current_max_bookmark_ts = max(
+                        current_max_bookmark_ts, record_bookmark_ts
                     )
 
                     for child in self.child_to_sync:
                         child.sync(state=state, transformer=transformer, parent_obj=record)
 
+            current_max_bookmark_date = get_datetime_from_timestamp(current_max_bookmark_ts)
             state = self.write_bookmark(state, self.tap_stream_id, value=current_max_bookmark_date)
             return counter.value
 
@@ -211,6 +281,31 @@ class FullTableStream(BaseStream):
     """Base Class for Incremental Stream."""
 
     replication_keys = []
+
+    def get_records(self):
+        response = self.client.make_request(
+            self.http_method,
+            self.url_endpoint,
+            self.params,
+            self.headers,
+            body=json.dumps(self.data_payload),
+            path=self.path
+        )
+
+        if isinstance(response, dict):
+            raw_records = [response]
+
+        elif isinstance(response, list):
+            raw_records = response
+
+        elif response is None:
+            raw_records = []
+
+        else:
+            LOGGER.warning(f"Unexpected response type: {type(response)} in {self.__class__.__name__}.get_records")
+            raw_records = []
+
+        yield from raw_records
 
     def sync(
         self,
