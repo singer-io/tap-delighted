@@ -144,7 +144,7 @@ class TestClient(unittest.TestCase):
     def test_make_request_full_response(self):
         """ Test the full response object return workflow """
         with patch.object(self.client._session, "request", return_value=MockResponse(200, text={"data": "ok"}, raise_error=False)) as mock_request:
-            response = self.client._Client__make_request("GET", "https://api.example.com/resource", full_response=True)
+            response = self.client.make_request("GET", "https://api.example.com/resource", full_response=True)
 
             expected_response = {"data": "ok"}
             actual_response = response.json()

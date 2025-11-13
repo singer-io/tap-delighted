@@ -57,7 +57,7 @@ NESTED_ARRAY_RECORD_WITH_TIMESTAMP = {
 }
 
 
-def extract_field_values(record: Dict, fields_to_extract: Set = set()):
+def extract_field_values(record: Dict, fields_to_extract: Set = None):
     """Utility function to extract values from specified fields, including nested ones.
 
     Args:
@@ -67,6 +67,9 @@ def extract_field_values(record: Dict, fields_to_extract: Set = set()):
     Returns:
         List: List of extracted field values
     """
+
+    if fields_to_extract is None:
+        fields_to_extract = set()
 
     extracted_field_values = []
     for key, value in record.items():
