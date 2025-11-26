@@ -21,7 +21,9 @@ class DelightedBookMarkTest(BookmarkTest, DelightedBaseTest):
         return "tap_tester_delighted_bookmark_test"
 
     def streams_to_test(self):
-        streams_to_exclude = {"sms_autopilot", "metrics"}  # Excluding sms_autopilot since we don't have access to it
+        streams_to_exclude = {"sms_autopilot",  # We don't have API access to it
+                              "metrics"}        # FullTable stream
+
         return self.expected_stream_names().difference(streams_to_exclude)
 
     def calculate_new_bookmarks(self):

@@ -11,7 +11,9 @@ class DelightedStartDateTest(StartDateTest, DelightedBaseTest):
         return "tap_tester_delighted_start_date_test"
 
     def streams_to_test(self):
-        streams_to_exclude = {"sms_autopilot", "metrics"}  # Excluding sms_autopilot since we don't have access to it and full_table metrics
+        streams_to_exclude = {"sms_autopilot",  # We don't have API access to it
+                              "metrics"}        # FullTable stream
+
         return self.expected_stream_names().difference(streams_to_exclude)
 
     @property
