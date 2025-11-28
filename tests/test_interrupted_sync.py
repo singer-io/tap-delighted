@@ -1,9 +1,9 @@
 
-from base import delightedBaseTest
+from base import DelightedBaseTest
 from tap_tester.base_suite_tests.interrupted_sync_test import InterruptedSyncTest
 
 
-class delightedInterruptedSyncTest(InterruptedSyncTest, delightedBaseTest):
+class DelightedInterruptedSyncTest(InterruptedSyncTest, DelightedBaseTest):
     """Test tap sets a bookmark and respects it for the next sync of a
     stream."""
 
@@ -12,17 +12,19 @@ class delightedInterruptedSyncTest(InterruptedSyncTest, delightedBaseTest):
         return "tap_tester_delighted_interrupted_sync_test"
 
     def streams_to_test(self):
-        return self.expected_stream_names()
+        streams_to_exclude = {"sms_autopilot",  # We don't have API access to it
+                              "metrics"}        # FullTable stream
+
+        return self.expected_stream_names().difference(streams_to_exclude)
 
     def manipulate_state(self):
         return {
-            "currently_syncing": "prospects",
+            "currently_syncing": "people",
             "bookmarks": {
                 "people": {"created_at": "2020-01-01T00:00:00Z"},
                 "survey_responses": {"updated_at": "2020-01-01T00:00:00Z"},
                 "unsubscribes": {"unsubscribed_at": "2020-01-01T00:00:00Z"},
                 "bounces": {"bounced_at": "2020-01-01T00:00:00Z"},
                 "email_autopilot": {"updated_at": "2020-01-01T00:00:00Z"},
-                "sms_autopilot": {"updated_at": "2020-01-01T00:00:00Z"},
             }
         }
