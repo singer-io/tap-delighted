@@ -177,13 +177,15 @@ class IncrementalStream(BaseStream):
         )
 
     def update_params(self, updated_since) -> None:
-        LOGGER.info(f"Updating params with filter param: {self.filter_param} and value: {updated_since}")
-        self.params[self.filter_param] = updated_since
+        # Disable pylint no-member since the child classes will define filter_param
+        LOGGER.info(f"Updating params with filter param: {self.filter_param} and value: {updated_since}")  # pylint: disable=no-member
+        self.params[self.filter_param] = updated_since  # pylint: disable=no-member
         self.params["per_page"] = self.page_size
 
     def get_records(self, paginator_obj: DelightedPaginator):
         """Interacts with api client interaction and pagination."""
-        if self.is_page_number_pagination:
+        # Disable pylint no-member since the child classes will define is_page_number_pagination
+        if self.is_page_number_pagination:  # pylint: disable=no-member
             yield from paginator_obj._page_number_pagination()
         else:
             yield from paginator_obj._cursor_pagination()
@@ -379,7 +381,8 @@ class ChildBaseStream(IncrementalStream):
 
     def get_bookmark(self, state: Dict, stream: str, key: Any = None) -> int:
         """Singleton bookmark value for child streams."""
-        if not self.bookmark_value:
+        # Disable pylint access-member-before-definition since bookmark_value is defined at runtime
+        if not self.bookmark_value:  # pylint: disable=access-member-before-definition
             self.bookmark_value = super().get_bookmark(state, stream)
 
         return self.bookmark_value
