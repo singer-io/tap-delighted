@@ -177,9 +177,8 @@ class IncrementalStream(BaseStream):
         )
 
     def update_params(self, updated_since) -> None:
-        api_filter_param = self.filter_param
-        LOGGER.info(f"Updating params with filter param: {api_filter_param} and value: {updated_since}")
-        self.params[api_filter_param] = updated_since
+        LOGGER.info(f"Updating params with filter param: {self.filter_param} and value: {updated_since}")
+        self.params[self.filter_param] = updated_since
         self.params["per_page"] = self.page_size
 
     def get_records(self, paginator_obj: DelightedPaginator):
@@ -190,7 +189,7 @@ class IncrementalStream(BaseStream):
             yield from paginator_obj._cursor_pagination()
 
     def modify_object(self, record, parent_record=None, datetime_fields=set()):
-        """ Modify the record's datetime fields before writing to the stream
+        """ Modify the record's datetime fields from UNIX timestamp to ISO 8601 format before writing to the stream
 
         Args:
             record (Dict): The record to modify
@@ -250,7 +249,7 @@ class IncrementalStream(BaseStream):
             for record in self.get_records(paginator_obj=paginator_obj):
                 self.modify_object(record, parent_obj, datetime_fields=datetime_fields)
 
-                if self.tap_stream_id.endswith("autopilot"):
+                if self.tap_stream_id in {"email_autopilot", "sms_autopilot"}:
                     # If the stream is email or sms autopilot, move the key_properties to root level
                     normalize_autopilot_record(record, self.key_properties)
 
