@@ -8,10 +8,10 @@ class DelightedAllFields(AllFieldsTest, DelightedBaseTest):
     the replication of all fields."""
 
     MISSING_FIELDS = {
-    "people": [
-        "phone_number"  # As we couldn't generate this data
-    ]
-}
+        "people": [
+            "phone_number"  # As we couldn't generate this data
+        ]
+    }
 
     @staticmethod
     def name():

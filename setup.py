@@ -1,7 +1,6 @@
 
 
-from setuptools import setup, find_packages
-
+from setuptools import find_packages, setup
 
 setup(name="tap-delighted",
       version="0.0.1",
@@ -11,8 +10,8 @@ setup(name="tap-delighted",
       classifiers=["Programming Language :: Python :: 3 :: Only"],
       py_modules=["tap_delighted"],
       install_requires=[
-        "singer-python==6.1.1",
-        "requests==2.32.4",
+        "singer-python==6.3.0",
+        "requests==2.32.5",
         "backoff==2.2.1",
         "parameterized"
       ],
