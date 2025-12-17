@@ -2,7 +2,6 @@ from base import DelightedBaseTest
 from tap_tester.base_suite_tests.all_fields_test import AllFieldsTest
 
 
-
 class DelightedAllFields(AllFieldsTest, DelightedBaseTest):
     """Ensure running the tap with all streams and fields selected results in
     the replication of all fields."""
