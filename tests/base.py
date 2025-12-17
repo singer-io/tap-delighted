@@ -66,7 +66,7 @@ class DelightedBaseTest(BaseCase):
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: {"updated_at"},
                 cls.OBEYS_START_DATE: False,
-                cls.API_LIMIT: 20
+                cls.API_LIMIT: 3
             },
             "sms_autopilot": {
                 cls.PRIMARY_KEYS: {"person_id", "next_survey_request_id"},
@@ -81,7 +81,7 @@ class DelightedBaseTest(BaseCase):
     def get_credentials():
         """Authentication information for the test account."""
         credentials_dict = {}
-        creds = {'api_key': 'DELIGHTED_API_KEY'}
+        creds = {'api_key': 'TAP_DELIGHTED_API_KEY'}
 
         for cred in creds:
             credentials_dict[cred] = os.getenv(creds[cred])
