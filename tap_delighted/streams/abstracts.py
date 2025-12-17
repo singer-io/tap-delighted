@@ -6,7 +6,6 @@ from singer import (Transformer, get_bookmark, get_logger, metadata, metrics,
                     write_bookmark, write_record, write_schema)
 
 from tap_delighted.utils import (DelightedPaginator,
-                                 get_datetime_fields_from_schema,
                                  get_datetime_from_timestamp,
                                  get_timestamp_from_datetime,
                                  normalize_autopilot_record)
@@ -177,46 +176,18 @@ class IncrementalStream(BaseStream):
         )
 
     def update_params(self, updated_since) -> None:
-        api_filter_param = self.filter_param
-        LOGGER.info(f"Updating params with filter param: {api_filter_param} and value: {updated_since}")
-        self.params[api_filter_param] = updated_since
+        # Disable pylint no-member since the child classes will define filter_param
+        LOGGER.info(f"Updating params with filter param: {self.filter_param} and value: {updated_since}")  # pylint: disable=no-member
+        self.params[self.filter_param] = updated_since  # pylint: disable=no-member
         self.params["per_page"] = self.page_size
 
     def get_records(self, paginator_obj: DelightedPaginator):
         """Interacts with api client interaction and pagination."""
-        if self.is_page_number_pagination:
+        # Disable pylint no-member since the child classes will define is_page_number_pagination
+        if self.is_page_number_pagination:  # pylint: disable=no-member
             yield from paginator_obj._page_number_pagination()
         else:
             yield from paginator_obj._cursor_pagination()
-
-    def modify_object(self, record, parent_record=None, datetime_fields=set()):
-        """ Modify the record's datetime fields before writing to the stream
-
-        Args:
-            record (Dict): The record to modify
-            parent_record (Dict, optional): The parent record. Defaults to None.
-            datetime_fields (Set[str], optional): The set of datetime fields. Defaults to set().
-        """
-        # Iterate on the record and convert datetime fields to standard format
-        for field, value in record.items():
-            if field in datetime_fields and value is not None:
-                # Convert to standard datetime format
-                try:
-                    standardized_datetime = get_datetime_from_timestamp(value)
-                    record[field] = standardized_datetime
-                except Exception as e:
-                    LOGGER.error("Error converting field {} with value {}: {}".format(field, value, str(e)))
-                    record[field] = value  # Keep original value if conversion fails
-
-            elif isinstance(value, dict):
-                # Nested object, process recursively
-                self.modify_object(value, datetime_fields=datetime_fields)
-
-            elif isinstance(value, list):
-                # List of items, process each item
-                for item in value:
-                    if isinstance(item, dict):
-                        self.modify_object(item, datetime_fields=datetime_fields)
 
     def sync(
         self,
@@ -232,9 +203,6 @@ class IncrementalStream(BaseStream):
         self.update_data_payload(parent_obj=parent_obj)
         self.url_endpoint = self.get_url_endpoint(parent_obj)
 
-        # Get all the datetime fields from the schema
-        datetime_fields = get_datetime_fields_from_schema(self.schema)
-
         # Initialise the paginator class since all
         # the streams are paginated
         paginator_obj = DelightedPaginator(
@@ -248,9 +216,8 @@ class IncrementalStream(BaseStream):
 
         with metrics.record_counter(self.tap_stream_id) as counter:
             for record in self.get_records(paginator_obj=paginator_obj):
-                self.modify_object(record, parent_obj, datetime_fields=datetime_fields)
 
-                if self.tap_stream_id.endswith("autopilot"):
+                if self.tap_stream_id in {"email_autopilot", "sms_autopilot"}:
                     # If the stream is email or sms autopilot, move the key_properties to root level
                     normalize_autopilot_record(record, self.key_properties)
 
@@ -292,20 +259,8 @@ class FullTableStream(BaseStream):
             path=self.path
         )
 
-        if isinstance(response, dict):
-            raw_records = [response]
-
-        elif isinstance(response, list):
-            raw_records = response
-
-        elif response is None:
-            raw_records = []
-
-        else:
-            LOGGER.warning(f"Unexpected response type: {type(response)} in {self.__class__.__name__}.get_records")
-            raw_records = []
-
-        yield from raw_records
+        # For metrics stream, the response type is a single dict record. Yield it directly.
+        yield response
 
     def sync(
         self,
@@ -380,7 +335,8 @@ class ChildBaseStream(IncrementalStream):
 
     def get_bookmark(self, state: Dict, stream: str, key: Any = None) -> int:
         """Singleton bookmark value for child streams."""
-        if not self.bookmark_value:
+        # Disable pylint access-member-before-definition since bookmark_value is defined at runtime
+        if not self.bookmark_value:  # pylint: disable=access-member-before-definition
             self.bookmark_value = super().get_bookmark(state, stream)
 
         return self.bookmark_value
