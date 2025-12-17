@@ -1,7 +1,7 @@
 import json
 import re
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 import singer
 
@@ -49,43 +49,6 @@ def get_timestamp_from_datetime(date_str: Optional[str]) -> Optional[int]:
         dt = datetime.strptime(date_str, BOOKMARK_FORMAT).replace(tzinfo=timezone.utc)
 
     return int(dt.timestamp())
-
-
-def get_datetime_fields_from_schema(schema: Dict) -> Set[str]:
-    """ Function to get datetime fields from the schema
-
-    Args:
-        schema (Dict): Schema specific to a stream
-
-    Returns:
-        Set[str]: Set of fields with format date-time
-    """
-
-    schema_properties = schema.get("properties", {})
-    datetime_fields = set()
-
-    for field, field_props in schema_properties.items():
-        # First check the type of the field
-        if (
-            field_props.get("type") == ["null", "string"] and
-            field_props.get("format") == "date-time"
-        ):
-            # This is a date-time field, so add in the list
-            datetime_fields.add(field)
-
-        elif field_props.get("type") == ["null", "object"]:
-            # This can have nested date-time fields
-            nested_props = {"properties": field_props.get("properties", {})}
-            datetime_nested_fields = get_datetime_fields_from_schema(schema=nested_props)
-            datetime_fields.update(datetime_nested_fields)
-
-        elif field_props.get("type") == ["null", "array"]:
-            # This can have nested date-time fields in items
-            items_props = {"properties": field_props.get("items", {}).get("properties", {})}
-            datetime_nested_fields = get_datetime_fields_from_schema(schema=items_props)
-            datetime_fields.update(datetime_nested_fields)
-
-    return datetime_fields
 
 
 def normalize_autopilot_record(record: Dict, key_properties: List):
