@@ -21,6 +21,9 @@ class ConcreteParentBaseStream(IncrementalStream):
     def tap_stream_id(self):
         return "stream_1"
 
+    def modify_object(self, record, parent_record=None):
+        return super().modify_object(record, parent_record)
+
 
 class TestSync(unittest.TestCase):
     @patch("tap_delighted.streams.abstracts.metadata.to_map")

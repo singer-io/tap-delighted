@@ -4,6 +4,7 @@ from typing import Dict, Tuple
 
 import singer
 from singer import metadata
+
 from tap_delighted.streams import STREAMS
 
 LOGGER = singer.get_logger()
