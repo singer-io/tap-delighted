@@ -1,19 +1,19 @@
 """Test tap discovery mode and metadata."""
-from base import delightedBaseTest
+from base import DelightedBaseTest
 from tap_tester import menagerie
 from tap_tester.base_suite_tests.discovery_test import DiscoveryTest
 
 
-class delightedDiscoveryTest(DiscoveryTest, delightedBaseTest):
+class DelightedDiscoveryTest(DiscoveryTest, DelightedBaseTest):
     """Test tap discovery mode and metadata conforms to standards."""
     orphan_streams = {
-        people,
-        survey_responses,
-        metrics,
-        unsubscribes,
-        bounces,
-        email_autopilot,
-        sms_autopilot,
+        "people",
+        "survey_responses",
+        "metrics",
+        "unsubscribes",
+        "bounces",
+        "email_autopilot",
+        "sms_autopilot",
     }
 
     @staticmethod

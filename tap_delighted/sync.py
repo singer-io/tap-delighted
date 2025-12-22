@@ -1,6 +1,8 @@
 from typing import Dict
 
 import singer
+from singer.transform import UNIX_SECONDS_INTEGER_DATETIME_PARSING
+
 from tap_delighted.client import Client
 from tap_delighted.streams import STREAMS
 
@@ -45,7 +47,7 @@ def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
     last_stream = singer.get_currently_syncing(state)
     LOGGER.info("last/currently syncing stream: {}".format(last_stream))
 
-    with singer.Transformer() as transformer:
+    with singer.Transformer(integer_datetime_fmt=UNIX_SECONDS_INTEGER_DATETIME_PARSING) as transformer:
         for stream_name in streams_to_sync:
 
             stream = STREAMS[stream_name](client, catalog.get_stream(stream_name))
@@ -57,6 +59,7 @@ def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
             write_schema(stream, client, streams_to_sync, catalog)
             LOGGER.info("START Syncing: {}".format(stream_name))
             update_currently_syncing(state, stream_name)
+
             total_records = stream.sync(state=state, transformer=transformer)
 
             update_currently_syncing(state, None)
@@ -65,4 +68,3 @@ def sync(client: Client, config: Dict, catalog: singer.Catalog, state) -> None:
                     stream_name, total_records
                 )
             )
-
