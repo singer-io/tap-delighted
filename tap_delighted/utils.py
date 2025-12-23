@@ -1,11 +1,7 @@
 import json
 import re
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
-
-import singer
-
-LOGGER = singer.get_logger()
+from typing import Optional
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%SZ"
 BOOKMARK_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
