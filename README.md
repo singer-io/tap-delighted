@@ -6,7 +6,7 @@ spec](https://github.com/singer-io/getting-started/blob/master/docs/SPEC.md).
 
 This tap:
 
-- Pulls raw data from the [delighted API].
+- Pulls raw data from the [delighted API](https://app.delighted.com/docs/api).
 - Extracts the following resources:
     - [People](https://app.delighted.com/docs/api/listing-people)
 
@@ -50,11 +50,11 @@ This tap:
 - Replication strategy: INCREMENTAL
 
 **[email_autopilot](https://app.delighted.com/docs/api/listing-people-in-autopilot)**
-- Primary keys: []
+- Primary keys: ["person_id", "next_survey_request_id"]
 - Replication strategy: INCREMENTAL
 
 **[sms_autopilot](https://app.delighted.com/docs/api/listing-people-in-autopilot)**
-- Primary keys: []
+- Primary keys: ["person_id", "next_survey_request_id"]
 - Replication strategy: INCREMENTAL
 
 
@@ -86,17 +86,14 @@ This tap:
     - [target-stitch](https://github.com/singer-io/target-stitch)
 
 3. Create your tap's `config.json` file.  The tap config file for this tap should include these entries:
-   - `start_date` - the default value to use if no bookmark exists for an endpoint (rfc3339 date string)
-   - `user_agent` (string, optional): Process and email for API logging purposes. Example: `tap-delighted <api_user_email@your_company.com>`
-   - `request_timeout` (integer, `300`): Max time for which request should wait to get a response. Default request_timeout is 300 seconds.
+   - `api_key` - The API key from your delighted account
+   - `start_date` - The default value to use if no bookmark exists for an endpoint (rfc3339 date string)
 
     ```json
     {
-        "start_date": "2019-01-01T00:00:00Z",
-        "user_agent": "tap-delighted <api_user_email@your_company.com>",
-        "request_timeout": 300
+        "api_key": "your_api_key_here",
+        "start_date": "2019-01-01T00:00:00Z"
     }
-
     ```
     Optionally, also create a `state.json` file. `currently_syncing` is an optional attribute used for identifying the last object to be synced in case the job is interrupted mid-stream. The next run would begin where the last job left off.
 
