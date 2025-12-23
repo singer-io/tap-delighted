@@ -21,10 +21,10 @@ class DelightedInterruptedSyncTest(InterruptedSyncTest, DelightedBaseTest):
         return {
             "currently_syncing": "people",
             "bookmarks": {
-                "people": {"created_at": "2020-01-01T00:00:00Z"},
-                "survey_responses": {"updated_at": "2020-01-01T00:00:00Z"},
-                "unsubscribes": {"unsubscribed_at": "2020-01-01T00:00:00Z"},
-                "bounces": {"bounced_at": "2020-01-01T00:00:00Z"},
-                "email_autopilot": {"updated_at": "2020-01-01T00:00:00Z"},
+                "people": {"created_at": "2020-01-01T00:00:00.000000Z"},
+                "survey_responses": {"updated_at": "2020-01-01T00:00:00.000000Z"},
+                "unsubscribes": {"unsubscribed_at": "2020-01-01T00:00:00.000000Z"},
+                "bounces": {"bounced_at": "2020-01-01T00:00:00.000000Z"},
+                "email_autopilot": {"updated_at": "2020-01-01T00:00:00.000000Z"},
             }
         }

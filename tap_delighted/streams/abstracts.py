@@ -4,9 +4,9 @@ from typing import Any, Dict, Iterator, List, Tuple
 
 from singer import (Transformer, get_bookmark, get_logger, metadata, metrics,
                     write_bookmark, write_record, write_schema)
+from singer.transform import unix_seconds_to_datetime
 
 from tap_delighted.utils import (DelightedPaginator,
-                                 get_datetime_from_timestamp,
                                  get_timestamp_from_datetime,
                                  normalize_autopilot_record)
 
@@ -197,8 +197,8 @@ class IncrementalStream(BaseStream):
     ) -> Dict:
         """Implementation for `type: Incremental` stream."""
         bookmark_date = self.get_bookmark(state, self.tap_stream_id)
-        current_max_bookmark_date = bookmark_date
-        current_max_bookmark_ts = get_timestamp_from_datetime(date_str=bookmark_date)
+        current_max_bookmark_ts = bookmark_ts = get_timestamp_from_datetime(date_str=bookmark_date)
+
         self.update_params(updated_since=current_max_bookmark_ts)
         self.update_data_payload(parent_obj=parent_obj)
         self.url_endpoint = self.get_url_endpoint(parent_obj)
@@ -221,13 +221,13 @@ class IncrementalStream(BaseStream):
                     # If the stream is email or sms autopilot, move the key_properties to root level
                     normalize_autopilot_record(record, self.key_properties)
 
+                record_bookmark_ts = record[self.replication_keys[0]]
+
                 transformed_record = transformer.transform(
                     record, self.schema, self.metadata
                 )
-                record_bookmark = transformed_record[self.replication_keys[0]]
-                record_bookmark_ts = get_timestamp_from_datetime(date_str=record_bookmark)
 
-                if record_bookmark_ts >= current_max_bookmark_ts:
+                if record_bookmark_ts >= bookmark_ts:
                     if self.is_selected():
                         write_record(self.tap_stream_id, transformed_record)
                         counter.increment()
@@ -239,7 +239,7 @@ class IncrementalStream(BaseStream):
                     for child in self.child_to_sync:
                         child.sync(state=state, transformer=transformer, parent_obj=record)
 
-            current_max_bookmark_date = get_datetime_from_timestamp(current_max_bookmark_ts)
+            current_max_bookmark_date = unix_seconds_to_datetime(current_max_bookmark_ts)
             state = self.write_bookmark(state, self.tap_stream_id, value=current_max_bookmark_date)
             return counter.value
 
