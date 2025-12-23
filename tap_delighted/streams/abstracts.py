@@ -10,7 +10,6 @@ from tap_delighted.utils import (DelightedPaginator,
                                  get_timestamp_from_datetime,
                                  normalize_autopilot_record)
 
-
 LOGGER = get_logger()
 
 
