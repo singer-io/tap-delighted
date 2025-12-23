@@ -4,7 +4,6 @@ from unittest.mock import MagicMock
 from parameterized import parameterized
 
 from tap_delighted.utils import (DelightedPaginator,
-                                 get_datetime_from_timestamp,
                                  get_timestamp_from_datetime,
                                  normalize_autopilot_record)
 
@@ -42,16 +41,6 @@ AUTOPILOT_OUTPUT_RECORD = {
 
 
 class TestUtils(unittest.TestCase):
-
-    @parameterized.expand([
-        ["none value", None, None],
-        ["valid timestamp", 1625077800, "2021-06-30T18:30:00Z"],
-    ])
-    def test_datetime_from_timestamp(self, test_name, timestamp, expected):
-        """Test the get_datetime_from_timestamp function."""
-
-        result = get_datetime_from_timestamp(timestamp)
-        self.assertEqual(result, expected)
 
     @parameterized.expand([
         ["null value", None, None],

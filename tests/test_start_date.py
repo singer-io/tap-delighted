@@ -18,8 +18,8 @@ class DelightedStartDateTest(StartDateTest, DelightedBaseTest):
 
     @property
     def start_date_1(self):
-        return "2015-03-25T00:00:00Z"
+        return "2015-03-25T00:00:00.000000Z"
 
     @property
     def start_date_2(self):
-        return "2025-11-05T00:00:00Z"
+        return "2025-11-05T00:00:00.000000Z"
