@@ -5,7 +5,7 @@ from tap_tester.base_suite_tests.bookmark_test import BookmarkTest
 class DelightedBookMarkTest(BookmarkTest, DelightedBaseTest):
     """Test tap sets a bookmark and respects it for the next sync of a
     stream."""
-    bookmark_format = "%Y-%m-%dT%H:%M:%SZ"
+    bookmark_format = "%Y-%m-%dT%H:%M:%S.%fZ"
     initial_bookmarks = {
         "bookmarks": {
             "people": {"created_at": "2020-01-01T00:00:00.000000Z"},
