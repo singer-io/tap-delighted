@@ -67,6 +67,11 @@ class DelightedServiceUnavailableError(DelightedBackoffError):
     pass
 
 
+class DelightedGatewayTimeoutError(DelightedBackoffError):
+    """class representing 504 status code."""
+    pass
+
+
 ERROR_CODE_EXCEPTION_MAPPING = {
     400: {
         "raise_exception": DelightedBadRequestError,
@@ -111,5 +116,9 @@ ERROR_CODE_EXCEPTION_MAPPING = {
     503: {
         "raise_exception": DelightedServiceUnavailableError,
         "message": "API service is currently unavailable."
+    },
+    504: {
+        "raise_exception": DelightedGatewayTimeoutError,
+        "message": "The server did not receive a timely response from an upstream server."
     }
 }

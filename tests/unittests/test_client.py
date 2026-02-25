@@ -91,22 +91,24 @@ class TestClient(unittest.TestCase):
         ["404 error", 404, MockResponse(404), DelightedNotFoundError, "The resource you have specified cannot be found."],
         ["409 error", 409, MockResponse(409), DelightedConflictError, "The API request cannot be completed because the requested operation would conflict with an existing item."],
         ["422 error", 422, MockResponse(422), DelightedUnprocessableEntityError, "The request content itself is not processable by the server."],
+        ["501 error", 501, MockResponse(501), DelightedNotImplementedError, "The server does not support the functionality required to fulfill the request."],
     ])
     def test_make_request_http_failure_without_retry(self, test_name, error_code, mock_response, error, error_message):
 
-        with patch.object(self.client._session, "request", return_value=mock_response):
+        with patch.object(self.client._session, "request", return_value=mock_response) as mock_request:
             with self.assertRaises(error) as e:
                 self.client._Client__make_request("GET", "https://api.example.com/resource")
 
         expected_error_message = (f"HTTP-error-code: {error_code}, Error: {error_message}")
         self.assertEqual(str(e.exception), expected_error_message)
+        self.assertEqual(mock_request.call_count, 1)
 
     @parameterized.expand([
         ["429 error", 429, MockResponse(429), DelightedRateLimitError, "The API rate limit for your organisation/application pairing has been exceeded."],
         ["500 error", 500, MockResponse(500), DelightedInternalServerError, "The server encountered an unexpected condition which prevented it from fulfilling the request."],
-        ["501 error", 501, MockResponse(501), DelightedNotImplementedError, "The server does not support the functionality required to fulfill the request."],
         ["502 error", 502, MockResponse(502), DelightedBadGatewayError, "Server received an invalid response."],
         ["503 error", 503, MockResponse(503), DelightedServiceUnavailableError, "API service is currently unavailable."],
+        ["504 error", 504, MockResponse(504), DelightedGatewayTimeoutError, "The server did not receive a timely response from an upstream server."],
     ])
     @patch("time.sleep")
     def test_make_request_http_failure_with_retry(self, test_name, error_code, mock_response, error, error_message, mock_sleep):
@@ -132,6 +134,29 @@ class TestClient(unittest.TestCase):
             with self.assertRaises(error) as e:
                 self.client._Client__make_request("GET", "https://api.example.com/resource")
 
+            self.assertEqual(mock_request.call_count, 5)
+
+    @parameterized.expand([
+        ["505 error - HTTP Version Not Supported", 505, "Unknown Error"],
+        ["506 error - Variant Also Negotiates", 506, "Unknown Error"],
+        ["507 error - Insufficient Storage", 507, "Unknown Error"],
+        ["508 error - Loop Detected", 508, "Unknown Error"],
+        ["509 error - Bandwidth Limit Exceeded", 509, "Unknown Error"],
+        ["510 error - Not Extended", 510, "Unknown Error"],
+        ["511 error - Network Authentication Required", 511, "Unknown Error"],
+    ])
+    @patch("time.sleep")
+    def test_unmapped_5xx_errors_trigger_backoff(self, test_name, error_code, error_message, mock_sleep):
+        """Test that unmapped 5xx errors trigger backoff retry as DelightedBackoffError."""
+        mock_response = MockResponse(error_code)
+
+        with patch.object(self.client._session, "request", return_value=mock_response) as mock_request:
+            with self.assertRaises(DelightedBackoffError) as e:
+                self.client._Client__make_request("GET", "https://api.example.com/resource")
+
+            expected_error_message = f"HTTP-error-code: {error_code}, Error: {error_message}"
+            self.assertEqual(str(e.exception), expected_error_message)
+            # Verify backoff retry happened - should retry 5 times
             self.assertEqual(mock_request.call_count, 5)
 
     @patch("tap_delighted.client.Client.make_request")
