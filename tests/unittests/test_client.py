@@ -91,7 +91,6 @@ class TestClient(unittest.TestCase):
         ["404 error", 404, MockResponse(404), DelightedNotFoundError, "The resource you have specified cannot be found."],
         ["409 error", 409, MockResponse(409), DelightedConflictError, "The API request cannot be completed because the requested operation would conflict with an existing item."],
         ["422 error", 422, MockResponse(422), DelightedUnprocessableEntityError, "The request content itself is not processable by the server."],
-        ["501 error", 501, MockResponse(501), DelightedNotImplementedError, "The server does not support the functionality required to fulfill the request."],
     ])
     def test_make_request_http_failure_without_retry(self, test_name, error_code, mock_response, error, error_message):
 
@@ -106,9 +105,7 @@ class TestClient(unittest.TestCase):
     @parameterized.expand([
         ["429 error", 429, MockResponse(429), DelightedRateLimitError, "The API rate limit for your organisation/application pairing has been exceeded."],
         ["500 error", 500, MockResponse(500), DelightedInternalServerError, "The server encountered an unexpected condition which prevented it from fulfilling the request."],
-        ["502 error", 502, MockResponse(502), DelightedBadGatewayError, "Server received an invalid response."],
         ["503 error", 503, MockResponse(503), DelightedServiceUnavailableError, "API service is currently unavailable."],
-        ["504 error", 504, MockResponse(504), DelightedGatewayTimeoutError, "The server did not receive a timely response from an upstream server."],
     ])
     @patch("time.sleep")
     def test_make_request_http_failure_with_retry(self, test_name, error_code, mock_response, error, error_message, mock_sleep):
@@ -137,6 +134,9 @@ class TestClient(unittest.TestCase):
             self.assertEqual(mock_request.call_count, 5)
 
     @parameterized.expand([
+        ["501 error - Not Implemented", 501, "Unknown Error"],
+        ["502 error - Bad Gateway", 502, "Unknown Error"],
+        ["504 error - Gateway Timeout", 504, "Unknown Error"],
         ["505 error - HTTP Version Not Supported", 505, "Unknown Error"],
         ["506 error - Variant Also Negotiates", 506, "Unknown Error"],
         ["507 error - Insufficient Storage", 507, "Unknown Error"],

@@ -8,7 +8,6 @@ from singer import get_logger, metrics
 
 from tap_delighted.exceptions import (ERROR_CODE_EXCEPTION_MAPPING,
                                       DelightedBackoffError, DelightedError,
-                                      DelightedNotImplementedError,
                                       DelightedRateLimitError)
 from tap_delighted.utils import get_timestamp_from_datetime
 
@@ -132,7 +131,6 @@ class Client:
         ),
         max_tries=5,
         factor=2,
-        giveup=lambda e: isinstance(e, DelightedNotImplementedError),
     )
     def __make_request(
         self, method: str, endpoint: str, **kwargs
