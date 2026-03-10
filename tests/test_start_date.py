@@ -11,8 +11,13 @@ class DelightedStartDateTest(StartDateTest, DelightedBaseTest):
         return "tap_tester_delighted_start_date_test"
 
     def streams_to_test(self):
-        streams_to_exclude = {"sms_autopilot",  # We don't have API access to it
-                              "metrics"}        # FullTable stream
+        streams_to_exclude = {
+            # its data range does not overlap with other streams,
+            # so no single start_date can split all streams data for this test
+            "email_autopilot",
+            "sms_autopilot",  # We don't have API access to it
+            "metrics" # FullTable stream
+        }
 
         return self.expected_stream_names().difference(streams_to_exclude)
 
