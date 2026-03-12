@@ -94,18 +94,17 @@ class TestClient(unittest.TestCase):
     ])
     def test_make_request_http_failure_without_retry(self, test_name, error_code, mock_response, error, error_message):
 
-        with patch.object(self.client._session, "request", return_value=mock_response):
+        with patch.object(self.client._session, "request", return_value=mock_response) as mock_request:
             with self.assertRaises(error) as e:
                 self.client._Client__make_request("GET", "https://api.example.com/resource")
 
         expected_error_message = (f"HTTP-error-code: {error_code}, Error: {error_message}")
         self.assertEqual(str(e.exception), expected_error_message)
+        self.assertEqual(mock_request.call_count, 1)
 
     @parameterized.expand([
         ["429 error", 429, MockResponse(429), DelightedRateLimitError, "The API rate limit for your organisation/application pairing has been exceeded."],
         ["500 error", 500, MockResponse(500), DelightedInternalServerError, "The server encountered an unexpected condition which prevented it from fulfilling the request."],
-        ["501 error", 501, MockResponse(501), DelightedNotImplementedError, "The server does not support the functionality required to fulfill the request."],
-        ["502 error", 502, MockResponse(502), DelightedBadGatewayError, "Server received an invalid response."],
         ["503 error", 503, MockResponse(503), DelightedServiceUnavailableError, "API service is currently unavailable."],
     ])
     @patch("time.sleep")
@@ -133,6 +132,54 @@ class TestClient(unittest.TestCase):
                 self.client._Client__make_request("GET", "https://api.example.com/resource")
 
             self.assertEqual(mock_request.call_count, 5)
+
+    @parameterized.expand([
+        ["501 error - Not Implemented", 501, "Unknown Error"],
+        ["502 error - Bad Gateway", 502, "Unknown Error"],
+        ["504 error - Gateway Timeout", 504, "Unknown Error"],
+        ["505 error - HTTP Version Not Supported", 505, "Unknown Error"],
+        ["506 error - Variant Also Negotiates", 506, "Unknown Error"],
+        ["507 error - Insufficient Storage", 507, "Unknown Error"],
+        ["508 error - Loop Detected", 508, "Unknown Error"],
+        ["509 error - Bandwidth Limit Exceeded", 509, "Unknown Error"],
+        ["510 error - Not Extended", 510, "Unknown Error"],
+        ["511 error - Network Authentication Required", 511, "Unknown Error"],
+    ])
+    @patch("time.sleep")
+    def test_unmapped_5xx_errors_trigger_backoff(self, test_name, error_code, error_message, mock_sleep):
+        """Test that unmapped 5xx errors trigger backoff retry as DelightedBackoffError."""
+        mock_response = MockResponse(error_code)
+
+        with patch.object(self.client._session, "request", return_value=mock_response) as mock_request:
+            with self.assertRaises(DelightedBackoffError) as e:
+                self.client._Client__make_request("GET", "https://api.example.com/resource")
+
+            expected_error_message = f"HTTP-error-code: {error_code}, Error: {error_message}"
+            self.assertEqual(str(e.exception), expected_error_message)
+            # Verify backoff retry happened - should retry 5 times
+            self.assertEqual(mock_request.call_count, 5)
+
+    @parameterized.expand([
+        # Below 5xx range — DelightedError, no retry
+        ["status_499", 499, DelightedError, 1],
+        # All 5xx errors (500-599) — DelightedBackoffError, retried
+        ["status_500", 500, DelightedBackoffError, 5],
+        ["status_550", 550, DelightedBackoffError, 5],
+        ["status_599", 599, DelightedBackoffError, 5],
+        # Above 5xx range — DelightedError, no retry
+        ["status_600", 600, DelightedError, 1],
+    ])
+    @patch("time.sleep")
+    def test_5xx_range_boundary_checks(self, test_name, status_code, expected_exception, expected_call_count, mock_sleep):
+        """Test that the correct exception is raised at 5xx range boundaries."""
+        mock_response = MockResponse(status_code)
+
+        with patch.object(self.client._session, "request", return_value=mock_response) as mock_request:
+            with self.assertRaises(expected_exception):
+                self.client._Client__make_request("GET", "https://api.example.com/resource")
+
+            # Verify retry behavior
+            self.assertEqual(mock_request.call_count, expected_call_count)
 
     @patch("tap_delighted.client.Client.make_request")
     def test_check_api_credentials(self, mock_make_request):

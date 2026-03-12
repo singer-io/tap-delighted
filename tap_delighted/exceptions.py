@@ -52,16 +52,6 @@ class DelightedInternalServerError(DelightedBackoffError):
     pass
 
 
-class DelightedNotImplementedError(DelightedBackoffError):
-    """class representing 501 status code."""
-    pass
-
-
-class DelightedBadGatewayError(DelightedBackoffError):
-    """class representing 502 status code."""
-    pass
-
-
 class DelightedServiceUnavailableError(DelightedBackoffError):
     """class representing 503 status code."""
     pass
@@ -99,14 +89,6 @@ ERROR_CODE_EXCEPTION_MAPPING = {
     500: {
         "raise_exception": DelightedInternalServerError,
         "message": "The server encountered an unexpected condition which prevented it from fulfilling the request."
-    },
-    501: {
-        "raise_exception": DelightedNotImplementedError,
-        "message": "The server does not support the functionality required to fulfill the request."
-    },
-    502: {
-        "raise_exception": DelightedBadGatewayError,
-        "message": "Server received an invalid response."
     },
     503: {
         "raise_exception": DelightedServiceUnavailableError,
