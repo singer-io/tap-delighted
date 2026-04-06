@@ -3,7 +3,7 @@
 from setuptools import find_packages, setup
 
 setup(name="tap-delighted",
-      version="0.0.1",
+      version="0.0.2",
       description="Singer.io tap for extracting data from delighted API",
       author="Stitch",
       url="http://singer.io",
