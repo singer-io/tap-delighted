@@ -2,30 +2,48 @@ from base import DelightedBaseTest
 from tap_tester.base_suite_tests.start_date_test import StartDateTest
 
 
-class DelightedStartDateTest(StartDateTest, DelightedBaseTest):
-    """Instantiate start date according to the desired data set and run the
-    test."""
+class CachedStartDateMixin:
+    """Mixin that isolates the shared StartDateTest cache per concrete class.
 
-    # Per-class sync cache – isolates this class from other StartDateTest
-    # subclasses that also store results on the shared StartDateTest attributes.
+    StartDateTest stores sync results as class-level attributes, so all
+    subclasses share the same slots.  This mixin keeps a per-class snapshot of
+    those attributes (using ``type(self)`` so the logic is rename-safe) and
+    restores/captures them around each ``setUp`` call so that every concrete
+    test class sees only its own cached data.
+    """
+
+    # Per-class sync cache – initialised to None in each concrete class.
     _cached_record_count_1 = None
     _cached_messages_1 = None
     _cached_record_count_2 = None
     _cached_messages_2 = None
 
     def setUp(self):
-        # Restore or clear the shared StartDateTest cache with this class's
-        # own snapshot so setUp's condition works correctly.
-        StartDateTest.record_count_by_stream_1 = DelightedStartDateTest._cached_record_count_1
-        StartDateTest.synced_messages_by_stream_1 = DelightedStartDateTest._cached_messages_1
-        StartDateTest.record_count_by_stream_2 = DelightedStartDateTest._cached_record_count_2
-        StartDateTest.synced_messages_by_stream_2 = DelightedStartDateTest._cached_messages_2
+        cls = type(self)
+        # Restore this class's snapshot into the shared StartDateTest slots
+        # so that setUp's early-exit condition evaluates correctly.
+        StartDateTest.record_count_by_stream_1 = cls._cached_record_count_1
+        StartDateTest.synced_messages_by_stream_1 = cls._cached_messages_1
+        StartDateTest.record_count_by_stream_2 = cls._cached_record_count_2
+        StartDateTest.synced_messages_by_stream_2 = cls._cached_messages_2
+
         super().setUp()
 
-        DelightedStartDateTest._cached_record_count_1 = StartDateTest.record_count_by_stream_1
-        DelightedStartDateTest._cached_messages_1 = StartDateTest.synced_messages_by_stream_1
-        DelightedStartDateTest._cached_record_count_2 = StartDateTest.record_count_by_stream_2
-        DelightedStartDateTest._cached_messages_2 = StartDateTest.synced_messages_by_stream_2
+        # Capture whatever setUp wrote back into the shared slots.
+        cls._cached_record_count_1 = StartDateTest.record_count_by_stream_1
+        cls._cached_messages_1 = StartDateTest.synced_messages_by_stream_1
+        cls._cached_record_count_2 = StartDateTest.record_count_by_stream_2
+        cls._cached_messages_2 = StartDateTest.synced_messages_by_stream_2
+
+
+class DelightedStartDateTest(CachedStartDateMixin, StartDateTest, DelightedBaseTest):
+    """Instantiate start date according to the desired data set and run the
+    test."""
+
+    _cached_record_count_1 = None
+    _cached_messages_1 = None
+    _cached_record_count_2 = None
+    _cached_messages_2 = None
 
     @staticmethod
     def name():
@@ -49,7 +67,7 @@ class DelightedStartDateTest(StartDateTest, DelightedBaseTest):
         return "2025-11-05T00:00:00.000000Z"
 
 
-class DelightedEmailAutopilotStartDateTest(StartDateTest, DelightedBaseTest):
+class DelightedEmailAutopilotStartDateTest(CachedStartDateMixin, StartDateTest, DelightedBaseTest):
     """Start date test specifically for email_autopilot.
 
     The email_autopilot stream has records starting from 2025-12-09, so the
@@ -57,22 +75,11 @@ class DelightedEmailAutopilotStartDateTest(StartDateTest, DelightedBaseTest):
     start_date_1. Use dates where start_date_2 (2026-02-01) cuts the result
     to 13 records while start_date_1 (2025-12-01) returns all 28.
     """
+
     _cached_record_count_1 = None
     _cached_messages_1 = None
     _cached_record_count_2 = None
     _cached_messages_2 = None
-
-    def setUp(self):
-        StartDateTest.record_count_by_stream_1 = DelightedEmailAutopilotStartDateTest._cached_record_count_1
-        StartDateTest.synced_messages_by_stream_1 = DelightedEmailAutopilotStartDateTest._cached_messages_1
-        StartDateTest.record_count_by_stream_2 = DelightedEmailAutopilotStartDateTest._cached_record_count_2
-        StartDateTest.synced_messages_by_stream_2 = DelightedEmailAutopilotStartDateTest._cached_messages_2
-        super().setUp()
-
-        DelightedEmailAutopilotStartDateTest._cached_record_count_1 = StartDateTest.record_count_by_stream_1
-        DelightedEmailAutopilotStartDateTest._cached_messages_1 = StartDateTest.synced_messages_by_stream_1
-        DelightedEmailAutopilotStartDateTest._cached_record_count_2 = StartDateTest.record_count_by_stream_2
-        DelightedEmailAutopilotStartDateTest._cached_messages_2 = StartDateTest.synced_messages_by_stream_2
 
     @staticmethod
     def name():

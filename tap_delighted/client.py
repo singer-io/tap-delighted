@@ -36,11 +36,11 @@ def raise_for_error(response: requests.Response) -> None:
             message = f"HTTP-error-code: {response.status_code}, Error: {response_json.get('message', error_message)}"
 
         exc = ERROR_CODE_EXCEPTION_MAPPING.get(response.status_code, {}).get(
-                "raise_exception", DelightedError
+            "raise_exception", DelightedError
         )
 
         # For 5xx errors, use backoff exception if not specifically mapped
-        if 500 <= response.status_code < 600 and response.status_code not in ERROR_CODE_EXCEPTION_MAPPING.keys():
+        if 500 <= response.status_code < 600 and response.status_code not in ERROR_CODE_EXCEPTION_MAPPING:
             exc = DelightedBackoffError
 
         raise exc(message, response) from None
