@@ -2,17 +2,29 @@ import singer
 from singer import metadata
 from singer.catalog import Catalog, CatalogEntry, Schema
 
-from tap_delighted.exceptions import DelightedUnprocessableEntityError
+from tap_delighted.exceptions import (
+    DelightedForbiddenError,
+    DelightedUnauthorizedError,
+    DelightedUnprocessableEntityError,
+)
 from tap_delighted.schema import get_schemas
 from tap_delighted.streams import STREAMS
 
 LOGGER = singer.get_logger()
 
+# Exceptions that indicate a stream is not available for this account
+_STREAM_UNAVAILABLE_EXCEPTIONS = (
+    DelightedUnauthorizedError,
+    DelightedForbiddenError,
+    DelightedUnprocessableEntityError,
+)
+
 
 def is_stream_available(client, stream_name):
     """
     Probe a stream's API endpoint to check if it is available.
-    Returns False if the API returns 422 (feature not configured).
+    Returns False if the API returns 401, 403, or 422 indicating the stream
+    is unauthorized or requires a feature not configured in the account.
     """
     stream_cls = STREAMS.get(stream_name)
     if not stream_cls:
@@ -29,11 +41,11 @@ def is_stream_available(client, stream_name):
     try:
         client.make_request("GET", endpoint, params=params, headers=headers)
         return True
-    except DelightedUnprocessableEntityError:
+    except _STREAM_UNAVAILABLE_EXCEPTIONS as e:
         LOGGER.warning(
-            "Excluding stream '%s' from catalog: API returned 422. "
-            "This stream requires a feature not configured in the Delighted account.",
-            stream_name,
+            "Excluding stream '%s' from catalog: %s. "
+            "This stream is not available for the current Delighted account.",
+            stream_name, e.message,
         )
         return False
 

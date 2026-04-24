@@ -2,7 +2,11 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from tap_delighted.discover import discover, is_stream_available
-from tap_delighted.exceptions import DelightedUnprocessableEntityError
+from tap_delighted.exceptions import (
+    DelightedForbiddenError,
+    DelightedUnauthorizedError,
+    DelightedUnprocessableEntityError,
+)
 
 
 class TestDiscover(unittest.TestCase):
@@ -122,6 +126,24 @@ class TestIsStreamAvailable(unittest.TestCase):
         client = MagicMock()
         client.base_url = "https://api.delighted.com"
         client.make_request.side_effect = DelightedUnprocessableEntityError("Autopilot not configured")
+
+        self.assertFalse(is_stream_available(client, "my_stream"))
+
+    @patch("tap_delighted.discover.STREAMS", {"my_stream": type("S", (), {"path": "v1/test.json"})})
+    def test_unavailable_stream_401(self):
+        """Test that a stream returning 401 is excluded."""
+        client = MagicMock()
+        client.base_url = "https://api.delighted.com"
+        client.make_request.side_effect = DelightedUnauthorizedError("Unauthorized")
+
+        self.assertFalse(is_stream_available(client, "my_stream"))
+
+    @patch("tap_delighted.discover.STREAMS", {"my_stream": type("S", (), {"path": "v1/test.json"})})
+    def test_unavailable_stream_403(self):
+        """Test that a stream returning 403 is excluded."""
+        client = MagicMock()
+        client.base_url = "https://api.delighted.com"
+        client.make_request.side_effect = DelightedForbiddenError("Forbidden")
 
         self.assertFalse(is_stream_available(client, "my_stream"))
 
