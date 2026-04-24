@@ -13,7 +13,6 @@ class DelightedDiscoveryTest(DiscoveryTest, DelightedBaseTest):
         "unsubscribes",
         "bounces",
         "email_autopilot",
-        "sms_autopilot",
     }
 
     @staticmethod

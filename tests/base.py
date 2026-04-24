@@ -67,13 +67,6 @@ class DelightedBaseTest(BaseCase):
                 cls.REPLICATION_KEYS: {"updated_at"},
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 3
-            },
-            "sms_autopilot": {
-                cls.PRIMARY_KEYS: {"person_id", "next_survey_request_id"},
-                cls.REPLICATION_METHOD: cls.INCREMENTAL,
-                cls.REPLICATION_KEYS: {"updated_at"},
-                cls.OBEYS_START_DATE: False,
-                cls.API_LIMIT: 20
             }
         }
 

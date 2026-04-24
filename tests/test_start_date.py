@@ -51,7 +51,6 @@ class DelightedStartDateTest(CachedStartDateMixin, StartDateTest, DelightedBaseT
 
     def streams_to_test(self):
         streams_to_exclude = {
-            "sms_autopilot",  # We don't have API access to it
             "metrics",  # FullTable stream
             "email_autopilot",  # Tested separately with dates that produce differing record counts
         }

@@ -12,7 +12,6 @@ class DelightedPaginationTest(PaginationTest, DelightedBaseTest):
         return "tap_tester_delighted_pagination_test"
 
     def streams_to_test(self):
-        streams_to_exclude = {"sms_autopilot",  # We don't have API access to it
-                              "metrics"}        # FullTable stream
+        streams_to_exclude = {"metrics"}  # FullTable stream
 
         return self.expected_stream_names().difference(streams_to_exclude)

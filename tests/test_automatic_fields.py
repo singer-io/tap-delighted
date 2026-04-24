@@ -13,5 +13,4 @@ class DelightedAutomaticFields(MinimumSelectionTest, DelightedBaseTest):
         return "tap_tester_delighted_automatic_fields_test"
 
     def streams_to_test(self):
-        streams_to_exclude = {"sms_autopilot"}  # Excluding sms_autopilot since we don't have access to it
-        return self.expected_stream_names().difference(streams_to_exclude)
+        return self.expected_stream_names()
