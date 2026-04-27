@@ -79,7 +79,7 @@ class DelightedBaseTest(BaseCase):
                 cls.REPLICATION_METHOD: cls.INCREMENTAL,
                 cls.REPLICATION_KEYS: {"updated_at"},
                 cls.OBEYS_START_DATE: False,
-                cls.API_LIMIT: 3
+                cls.API_LIMIT: 20
             }
         }
 
