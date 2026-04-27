@@ -12,6 +12,12 @@ class DelightedBaseTest(BaseCase):
     start_date = "2019-01-01T00:00:00Z"
     PARENT_TAP_STREAM_ID = "parent-tap-stream-id"
 
+    # Streams that require specific account permissions and may not be
+    # available in all environments. The tap excludes these dynamically
+    # at discovery time (401/403/422). Update this set if the test
+    # account gains or loses access.
+    PERMISSION_DEPENDENT_STREAMS = {"sms_autopilot"}
+
     @staticmethod
     def tap_name():
         """The name of the tap."""
@@ -67,8 +73,22 @@ class DelightedBaseTest(BaseCase):
                 cls.REPLICATION_KEYS: {"updated_at"},
                 cls.OBEYS_START_DATE: False,
                 cls.API_LIMIT: 3
+            },
+            "sms_autopilot": {
+                cls.PRIMARY_KEYS: {"person_id", "next_survey_request_id"},
+                cls.REPLICATION_METHOD: cls.INCREMENTAL,
+                cls.REPLICATION_KEYS: {"updated_at"},
+                cls.OBEYS_START_DATE: False,
+                cls.API_LIMIT: 3
             }
         }
+
+    @classmethod
+    def expected_stream_names(cls):
+        """Return expected streams, excluding permission-dependent streams
+        that may not be available in the current test account."""
+        return (set(cls.expected_metadata().keys())
+                - cls.PERMISSION_DEPENDENT_STREAMS)
 
     @staticmethod
     def get_credentials():
