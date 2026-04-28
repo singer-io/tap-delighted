@@ -153,6 +153,8 @@ class DelightedBaseTest(BaseCase):
             logging="Expected streams are present in catalog."
         )
 
+        return found_catalogs
+
     def expected_parent_tap_stream(self, stream=None):
         """return a dictionary with key of table name and value of parent stream"""
         parent_stream = {
