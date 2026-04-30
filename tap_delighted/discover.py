@@ -7,6 +7,7 @@ from tap_delighted.exceptions import (
     DelightedUnauthorizedError,
     DelightedUnprocessableEntityError,
 )
+from tap_delighted.client import Client
 from tap_delighted.schema import get_schemas
 from tap_delighted.streams import STREAMS
 
@@ -50,7 +51,7 @@ def is_stream_available(client, stream_name):
         return False
 
 
-def discover(client=None) -> Catalog:
+def discover(client: Client) -> Catalog:
     """
     Run the discovery mode, prepare the catalog file and return the catalog.
     """
@@ -58,7 +59,7 @@ def discover(client=None) -> Catalog:
     catalog = Catalog([])
 
     for stream_name, schema_dict in schemas.items():
-        if client and not is_stream_available(client, stream_name):
+        if not is_stream_available(client, stream_name):
             continue
 
         try:

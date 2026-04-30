@@ -12,7 +12,7 @@ LOGGER = singer.get_logger()
 REQUIRED_CONFIG_KEYS = ['api_key', 'start_date']
 
 
-def do_discover(client=None):
+def do_discover(client):
     """
     Discover and emit the catalog to stdout
     """

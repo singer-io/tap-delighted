@@ -49,15 +49,17 @@ class TestDiscover(unittest.TestCase):
         }
     }
 
+    @patch("tap_delighted.discover.is_stream_available", return_value=True)
     @patch("tap_delighted.discover.get_schemas")
     @patch("singer.metadata.to_map")
-    def test_discover(self, mock_to_map, mock_get_schemas):
+    def test_discover(self, mock_to_map, mock_get_schemas, mock_available):
         """ Test the discover function """
 
         mock_get_schemas.return_value = (self.dummy_schema, self.dummy_metadata)
         mock_to_map.return_value = self.dummy_metadata[self.test_stream_name]
 
-        catalog_obj = discover()
+        client = MagicMock()
+        catalog_obj = discover(client)
 
         self.assertIsNotNone(catalog_obj)
 
@@ -67,23 +69,13 @@ class TestDiscover(unittest.TestCase):
     def test_discovery_error(self):
         """ Test the discover function error handling """
 
-        with patch("tap_delighted.discover.get_schemas") as mock_get_schemas:
+        with patch("tap_delighted.discover.get_schemas") as mock_get_schemas, \
+             patch("tap_delighted.discover.is_stream_available", return_value=True):
             mock_get_schemas.return_value = ({"invalid_stream": "invalid_schema"}, {})
 
+            client = MagicMock()
             with self.assertRaises(Exception):
-                discover()
-
-    @patch("tap_delighted.discover.get_schemas")
-    @patch("singer.metadata.to_map")
-    def test_discover_without_client(self, mock_to_map, mock_get_schemas):
-        """Test that discover without client includes all streams (backward compatible)."""
-        mock_get_schemas.return_value = (self.dummy_schema, self.dummy_metadata)
-        mock_to_map.return_value = self.dummy_metadata[self.test_stream_name]
-
-        catalog_obj = discover(client=None)
-
-        self.assertEqual(len(catalog_obj.streams), 1)
-        self.assertEqual(catalog_obj.streams[0].stream, self.test_stream_name)
+                discover(client)
 
     @patch("tap_delighted.discover.is_stream_available")
     @patch("tap_delighted.discover.get_schemas")
