@@ -34,7 +34,7 @@ class DelightedBookMarkTest(BookmarkTest, DelightedBaseTest):
             "survey_responses": {"updated_at": "2025-11-05T00:00:00.000000Z"},
             "unsubscribes": {"unsubscribed_at": "2025-11-01T00:00:00.000000Z"},
             "bounces": {"bounced_at": "2025-11-01T00:00:00.000000Z"},
-            "email_autopilot": {"updated_at": "2026-02-01T00:00:00.000000Z"},
+            "email_autopilot": {"updated_at": "2026-03-15T00:00:00.000000Z"},
         }
 
         return new_bookmarks
