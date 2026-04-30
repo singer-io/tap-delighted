@@ -14,6 +14,10 @@ class DelightedBaseTest(BaseCase):
     start_date = "2019-01-01T00:00:00Z"
     PARENT_TAP_STREAM_ID = "parent-tap-stream-id"
 
+    # Streams that are known to be permission-gated at the API level
+    # and may be excluded by the tap during discovery probing.
+    KNOWN_PERMISSION_GATED_STREAMS = {"sms_autopilot"}
+
     # Populated dynamically by run_and_verify_check_mode based on
     # which streams the tap excludes at discovery time (401/403/422).
     PERMISSION_DEPENDENT_STREAMS = set()
@@ -138,14 +142,26 @@ class DelightedBaseTest(BaseCase):
         )
 
         # Streams in expected_metadata but not discovered are
-        # permission-dependent — update the class variable dynamically
+        # permission-dependent — only accept streams in the known
+        # permission-gated list. Any other missing stream is a real
+        # discovery regression.
         missing = all_expected - found_names
         if missing:
+            unexplained = missing - self.KNOWN_PERMISSION_GATED_STREAMS
+            self.assertEqual(
+                unexplained, set(),
+                msg=(
+                    f"Streams missing from discovery that are NOT in "
+                    f"KNOWN_PERMISSION_GATED_STREAMS: {unexplained}. "
+                    f"If these are legitimately permission-gated, add "
+                    f"them to KNOWN_PERMISSION_GATED_STREAMS."
+                ),
+            )
             LOGGER.info(
                 "Dynamically excluding permission-dependent "
                 "streams: %s", missing
             )
-            type(self).PERMISSION_DEPENDENT_STREAMS = missing
+            self.__class__.PERMISSION_DEPENDENT_STREAMS = missing
 
         # Now the assertion uses the updated expected_stream_names
         self.assertSetEqual(
