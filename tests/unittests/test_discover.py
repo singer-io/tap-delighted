@@ -138,8 +138,3 @@ class TestIsStreamAvailable(unittest.TestCase):
         client.make_request.side_effect = DelightedForbiddenError("Forbidden")
 
         self.assertFalse(is_stream_available(client, "my_stream"))
-
-    def test_unknown_stream_is_available(self):
-        """Test that a stream not in STREAMS is treated as available."""
-        client = MagicMock()
-        self.assertTrue(is_stream_available(client, "nonexistent_stream"))

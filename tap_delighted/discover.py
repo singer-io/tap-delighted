@@ -28,14 +28,8 @@ def is_stream_available(client, stream_name):
     is unauthorized or requires a feature not configured in the account.
     """
     stream_cls = STREAMS.get(stream_name)
-    if not stream_cls:
-        return True
 
-    path = getattr(stream_cls, 'path', '')
-    if not path:
-        return True
-
-    endpoint = f"{client.base_url}/{path}"
+    endpoint = f"{client.base_url}/{stream_cls.path}"
     params = {"per_page": 1}
     headers = {"Content-Type": "application/json"}
 
