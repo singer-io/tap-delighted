@@ -21,8 +21,7 @@ class DelightedBookMarkTest(BookmarkTest, DelightedBaseTest):
         return "tap_tester_delighted_bookmark_test"
 
     def streams_to_test(self):
-        streams_to_exclude = {"sms_autopilot",  # We don't have API access to it
-                              "metrics"}        # FullTable stream
+        streams_to_exclude = {"metrics"}  # FullTable stream
 
         return self.expected_stream_names().difference(streams_to_exclude)
 
@@ -35,7 +34,7 @@ class DelightedBookMarkTest(BookmarkTest, DelightedBaseTest):
             "survey_responses": {"updated_at": "2025-11-05T00:00:00.000000Z"},
             "unsubscribes": {"unsubscribed_at": "2025-11-01T00:00:00.000000Z"},
             "bounces": {"bounced_at": "2025-11-01T00:00:00.000000Z"},
-            "email_autopilot": {"updated_at": "2026-02-01T00:00:00.000000Z"},
+            "email_autopilot": {"updated_at": "2026-03-15T00:00:00.000000Z"},
         }
 
         return new_bookmarks

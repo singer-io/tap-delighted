@@ -51,7 +51,6 @@ class DelightedStartDateTest(CachedStartDateMixin, StartDateTest, DelightedBaseT
 
     def streams_to_test(self):
         streams_to_exclude = {
-            "sms_autopilot",  # We don't have API access to it
             "metrics",  # FullTable stream
             "email_autopilot",  # Tested separately with dates that produce differing record counts
         }
@@ -70,10 +69,9 @@ class DelightedStartDateTest(CachedStartDateMixin, StartDateTest, DelightedBaseT
 class DelightedEmailAutopilotStartDateTest(CachedStartDateMixin, StartDateTest, DelightedBaseTest):
     """Start date test specifically for email_autopilot.
 
-    The email_autopilot stream has records starting from 2025-12-09, so the
-    general test's start_date_2 (2025-11-05) yields the same 28 records as
-    start_date_1. Use dates where start_date_2 (2026-02-01) cuts the result
-    to 13 records while start_date_1 (2025-12-01) returns all 28.
+    The email_autopilot stream has records with updated_at ranging from
+    2026-01-27 to 2026-04-24. Use start_date_1 (2025-12-01) to capture all
+    records, and start_date_2 (2026-03-15) to capture only a subset.
     """
 
     _cached_record_count_1 = None
@@ -94,4 +92,4 @@ class DelightedEmailAutopilotStartDateTest(CachedStartDateMixin, StartDateTest, 
 
     @property
     def start_date_2(self):
-        return "2026-02-01T00:00:00.000000Z"
+        return "2026-03-15T00:00:00.000000Z"
