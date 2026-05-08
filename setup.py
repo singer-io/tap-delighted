@@ -8,7 +8,7 @@ setup(name="tap-delighted",
       classifiers=["Programming Language :: Python :: 3 :: Only"],
       py_modules=["tap_delighted"],
       install_requires=[
-        "singer-python==6.3.0",
+        "singer-python==6.8.0",
         "requests==2.33.0",
         "backoff==2.2.1",
         "parameterized"
